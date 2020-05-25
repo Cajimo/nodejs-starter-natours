@@ -33,9 +33,29 @@ app.use('/api/v1/users', userRouter);
 // If we are able to reach this point here that it means that the  request response cycle
 // was not yet finished at this point in our code
 app.all('*', (req, res, next) => {
-  res.status(404).json({
+  /* res.status(404).json({
     status: 'fallo',
     mensaje: `No se encuentra ${req.originalUrl} en este servidor!`,
+  }); */
+  //Creating an error!
+  const err = new Error(`No se encuentra ${req.originalUrl} en este servidor!`);
+  err.status = 'Ha habido un fallo!';
+  err.statusCode = 404;
+  // Express it will assume that it is an error and it will skip all
+  // the other middlewares in the middleware stack and then send the error
+  // that we passed in to our global error handling middleware
+  next(err);
+});
+
+// ERROR Handler middleware for all errors.
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
   });
 });
+
 module.exports = app;
